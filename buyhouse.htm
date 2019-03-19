@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <title>通勤時間找房v6</title>
+        <style>
+            /* Always set the map height explicitly to define the size of the div
+             * element that contains the map. */
+
+
+            #right-panel {
+                font-family: 'Roboto','sans-serif';
+                line-height: 30px;
+                padding-left: 10px;
+            }
+
+            #right-panel select, #right-panel input {
+                font-size: 15px;
+            }
+
+            #right-panel select {
+                width: 50%;
+            }
+
+            #right-panel i {
+                font-size: 12px;
+            }
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #map {
+                height: 100%;
+                width: 70%;
+                /*width: 100%; */
+            }
+            #right-panel {
+                float: right;
+                width: 29%;
+                padding-left: 1%;
+            }
+            #output {
+                font-size: 11px;
+            }
+
+
+
+            /* The popup bubble styling. */
+            .popup-bubble-level-0 {
+                /* Position the bubble centred-above its parent. */
+                /* color: red; */
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -100%);
+                /* Style the bubble. */
+                background-color: white;                
+                font-weight:bold;
+                padding: 7px;
+                border-radius: 5px;
+                font-family: sans-serif;
+                overflow-y: auto;
+                max-height: 60px;
+                box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+                /*opacity:0.9;*/
+                font-size: 15px;
+            }
+            .popup-bubble-level-1 {
+                /* Position the bubble centred-above its parent. */
+                color: black; 
+                background-color: #7fccE2; 
+                font-weight:bold;
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -100%);
+                /* Style the bubble. */
+                /*background-color: white; */
+                padding: 7px;
+                border-radius: 5px;
+                font-family: sans-serif;
+                overflow-y: auto;
+                max-height: 60px;
+                box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+                /*opacity:0.9;*/
+                font-size: 15px;
+            }
+            .popup-bubble-level-2 {
+                /* Position the bubble centred-above its parent. */
+                color: white; 
+                background-color: #b170C5; 
+                font-weight:bold;
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -100%);
+                /* Style the bubble. */
+                /*background-color: white; */
+                padding: 7px;
+                border-radius: 5px;
+                font-family: sans-serif;
+                overflow-y: auto;
+                max-height: 60px;
+                box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+                /*opacity:0.9;*/
+                font-size: 15px;
+            }
+            .popup-bubble-level-3 {
+                /* Position the bubble centred-above its parent. */
+                color: white; 
+                background-color: black; 
+                font-weight:bold;
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -100%);
+                /* Style the bubble. */
+                /*background-color: white; */
+                padding: 7px;
+                border-radius: 5px;
+                font-family: sans-serif;
+                overflow-y: auto;
+                max-height: 60px;
+                box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+                /*opacity:0.9;*/
+                font-size: 15px;
+            }
+            .popup-bubble-hide {
+                /* Position the bubble centred-above its parent. */
+                color: white; 
+                background-color: black; 
+                font-weight:bold;
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -100%);
+                /* Style the bubble. */
+                /*background-color: white; */
+                padding: 7px;
+                border-radius: 5px;
+                font-family: sans-serif;
+                overflow-y: auto;
+                max-height: 60px;
+                box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+                opacity:0.0;
+                font-size: 15px;
+            }
+            .popup-bubble-test {
+                /* Position the bubble centred-above its parent. */
+                color: black; 
+                background-color: orange; 
+                /*font-weight:bold;*/
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(-50%, -100%);
+                /* Style the bubble. */
+                /*background-color: white; */
+                padding: 7px;
+                border-radius: 5px;
+                font-family: sans-serif;
+                overflow-y: auto;
+                max-height: 60px;
+                box-shadow: 0px 2px 10px 1px rgba(0,0,0,0.5);
+                font-size: 15px;
+            }
+            /* The parent of the bubble. A zero-height div at the top of the tip. */
+            .popup-bubble-anchor {
+                /* Position the div a fixed distance above the tip. */
+                position: absolute;
+                width: 100%;
+                bottom: /* TIP_HEIGHT= */ 8px;
+                left: 0;
+            }
+            .popup-bubble-anchor-hide {
+                /* Position the div a fixed distance above the tip. */
+                position: absolute;
+                width: 100%;
+                bottom: /* TIP_HEIGHT= */ 8px;
+                left: 0;
+                opacity:0.0;
+            }
+            /* This element draws the tip. */
+            .popup-bubble-anchor::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                /* Center the tip horizontally. */
+                transform: translate(-50%, 0);
+                /* The tip is a https://css-tricks.com/snippets/css/css-triangle/ */
+                width: 0;
+                height: 0;
+                /* The tip is 8px high, and 12px wide. */
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: /* TIP_HEIGHT= */ 8px solid white;
+            }
+            /* JavaScript will position this div at the bottom of the popup tip. */
+            .popup-container {
+                cursor: auto;
+                height: 0;
+                position: absolute;
+                /* The max width of the info window. */
+                width: 200px;
+            }
+        </style>
+    </head>
+
+
+    <body>
+        
+        <div id="right-panel">
+                <div id="result_title"><strong>Results</strong></div>
+                <div id="target_addr"></div>
+
+                <div id="option">
+                	<FORM>通勤時間：
+<SELECT id="level_select" onchange="change_level_filter(this.selectedIndex)">
+<OPTION selected>全部顯示
+<OPTION>顯示70分以下
+<OPTION>顯示50分以下
+<OPTION>顯示30分以下
+<OPTION>全部隱藏
+</SELECT>
+</FORM>
+</div>
+<div id="show_icon">
+
+<br>
+<table border="0">
+　<tr>
+  <td width=40></td>
+　<td width=85><div id="icon_level-3"  class='popup-container' onclick="change_level_filter(0)"><div class="popup-bubble-level-3">全部顯示</div></div></td>
+　<td width=85><div id="icon_level-2"  class='popup-container' onclick="change_level_filter(1)"><div class="popup-bubble-level-2">70分內</div></div></td>
+　<td width=85><div id="icon_level-1"  class='popup-container' onclick="change_level_filter(2)"><div class="popup-bubble-level-1">50分內</div></div></td>
+　<td width=85><div id="icon_level-0" class='popup-container' onclick="change_level_filter(3)"><div class="popup-bubble-level-0">30分內</div></div></td>
+　<td width=85><div id="icon_level-0" class='popup-container' onclick="change_level_filter(4)"><div class="popup-bubble-level-0">全部隱藏</div></div></td>
+　</tr>
+</table>
+<!--
+<table border="0">
+　<tr><td width=40></td><td></td></tr>
+　<tr><td width=40></td><td width=85 height=50><div id="icon_level-3"  class='popup-container' onclick="change_level_filter(0)"><div class="popup-bubble-level-3">全部顯示</div></div></td></tr>
+　<tr><td width=40></td><td width=85 height=50><div id="icon_level-2"  class='popup-container' onclick="change_level_filter(1)"><div class="popup-bubble-level-2">70分內</div></div></td></tr>
+　<tr><td width=40></td><td width=85 height=50><div id="icon_level-1"  class='popup-container' onclick="change_level_filter(2)"><div class="popup-bubble-level-1">50分內</div></div></td></tr>
+　<tr><td width=40></td><td width=85 height=50><div id="icon_level-0" class='popup-container' onclick="change_level_filter(3)"><div class="popup-bubble-level-0">30分內</div></div></td></tr>
+　<tr><td width=40></td><td width=85 height=50><div id="icon_level-0" class='popup-container' onclick="change_level_filter(4)"><div class="popup-bubble-level-0">全部隱藏</div></div></td></tr>
+</table>
+-->
+</div>
+
+
+
+
+
+
+
+        <div><br></div>
+        <div id="output"></div>
+        </div>
+        <div id="map"></div>
+        <script>
+
+//Global Varables
+var map, popup, Popup, geocoder;
+var center_loc;
+var locations= [];
+var directionsService;
+var directionsDisplay;
+//var locations_region= []; //which region generate this location
+
+
+
+//Parameters
+var MAP_CENTER_LAT=25.032435;
+var MAP_CENTER_LNG=121.53490540000007;
+var TIME_MIN_LEVEL_1= 30;
+var TIME_MIN_LEVEL_2= 50;
+var TIME_MIN_LEVEL_3= 70;
+var POS_CENTER= "台灣台北市南港區忠孝東路七段369號"
+//var POS_CENTER= "台北101"
+//var POS_CENTER= "內湖仁寶"
+//var POS_CENTER= "深圳市高新南九道九號"
+var REGIONS= [     
+      { diameter_km:2,   density_km:2,    addr:POS_CENTER },
+      { diameter_km:25,  density_km:2,    addr:"南門市場" },
+//      { diameter_km:4,   density_km:1,    addr:"捷運大湖公園站" },
+//      { diameter_km:3,   density_km:1,    addr:"捷運永春站" },
+//      { diameter_km:4,   density_km:1,    addr:"捷運頭前庄站" },
+//      { diameter_km:3,   density_km:1,    addr:"捷運明德站" },
+//      { diameter_km:3,   density_km:1,    addr:"捷運丹鳳站" },
+//      { diameter_km:3,   density_km:1,    addr:"體育大學站" },
+//      { diameter_km:4,   density_km:1,    addr:"中央研究院" },
+//      { diameter_km:3,   density_km:1,    addr:"浮州火車站" },
+//      { diameter_km:3,   density_km:1,    addr:"捷運徐匯中學站" },
+//      { diameter_km:3,   density_km:1,    addr:"汐科火車站" },
+//      { diameter_km:3,   density_km:1,    addr:"百福車站" },
+//      { diameter_km:3,   density_km:1,    addr:"林口長庚醫院" },
+]
+
+
+var DEPART_TIME= new Date(2019, 3, 10, 8, 30) // April 10, 2019 (Wednesday)
+var TRAVEL_MODE= 'TRANSIT'    //DRIVING, BICYCLING, TRANSIT, WALKING 
+var ZOOM_LEVEL=12
+
+
+
+/***
+ Google Map Limitation:
+  geocoder.geocode  => max 10, otherwise report OVER_QUERY_LIMIT. Delay need > TBC
+  getDistanceMatrix() => max 10, otherwise report OVER_QUERY_LIMIT. Delay need > 4000ms
+  geocoder.geocode() => max 25, otherwise report MAX_DIMENSIONS_EXCEEDED. Delay around 2000ms
+ ***/
+var QUERY_LOC_LIMIT=25
+//var QUERY_LOC_LIMIT=25
+var QUERY_LOC_DELAY_MS=500
+var QUERY_GEO_DELAY_MS=400
+
+function set_div_css(p_div_obj, css_name) {
+         p_div_obj[0].classList.remove("popup-bubble-hide");
+         p_div_obj[0].classList.remove("popup-bubble-level-3");
+         p_div_obj[0].classList.remove("popup-bubble-level-2");
+         p_div_obj[0].classList.remove("popup-bubble-level-1");
+         p_div_obj[0].classList.remove("popup-bubble-level-0");
+         p_div_obj[0].classList.add(css_name);
+}
+
+
+function div_update_hide(p_div_obj) {
+    var level= document.getElementById('level_select').selectedIndex
+    var duration_min= p_div_obj[0].cust_duration_min
+    var anchor_css_name= "popup-bubble-anchor"
+    if(level==0) { //donothing            
+    }
+    else if( (level==1 && duration_min>=TIME_MIN_LEVEL_3 ) ||
+             (level==2 && duration_min>=TIME_MIN_LEVEL_2 ) ||
+             (level==3 && duration_min>=TIME_MIN_LEVEL_1 ) ||
+             (level==4) ) {
+                anchor_css_name= "popup-bubble-anchor-hide"
+    }
+    p_div_obj[0].cust_p_bubbleAnchor[0].classList.remove("popup-bubble-anchor");
+    p_div_obj[0].cust_p_bubbleAnchor[0].classList.remove("popup-bubble-anchor-hide");
+    p_div_obj[0].cust_p_bubbleAnchor[0].classList.add(anchor_css_name);
+//    console.log(anchor_css_name)
+
+}
+
+
+
+function get_css_name(duration_min) {
+    if(duration_min>=TIME_MIN_LEVEL_3)
+        css_name= "popup-bubble-level-3"
+    else if(duration_min>=TIME_MIN_LEVEL_2)
+        css_name= "popup-bubble-level-2"
+    else if(duration_min>=TIME_MIN_LEVEL_1)
+        css_name= "popup-bubble-level-1"
+    else
+        css_name= "popup-bubble-level-0"
+
+    return css_name
+}
+
+function change_level_filter(level) {    
+    document.getElementById('level_select').selectedIndex= level
+    console.log("change_level_filter, level="+level)
+    for(var i=0 ; i<popup_div_list.length ; i++) {
+        var duration_min= popup_div_list[i][0].cust_duration_min
+        //var css_name= get_css_name(duration_min)
+        //set_div_css(popup_div_list[i], css_name);
+//        popup_div_list[i][0].cust_p_bubbleAnchor
+        div_update_hide(popup_div_list[i]);
+    }
+}
+
+
+
+var popup_div_list= [];
+var p_click_div= []
+function add_label(label_location, label_str, label_hint, css_name, duration_min) {
+//    console.log('Mark transport time as ' + label_str);    
+    var p_popup_div= [document.createElement('div')];
+    popup_div_list.push(p_popup_div)
+    p_popup_div[0].innerHTML= label_str
+    p_popup_div[0].title= label_hint
+    p_popup_div[0].cust_lat= label_location.lat()
+    p_popup_div[0].cust_lng= label_location.lng()
+    p_popup_div[0].cust_duration_min= duration_min
+    
+
+    p_popup_div[0].onclick = function(){ 
+
+    //avoid second click before get response of previous click
+    if(p_click_div.length>0) {
+        console.log("ignore repeate click");
+        return;
+    }
+       
+    if( typeof(this.route_response) != "undefined" ) {
+          console.log("print previous route, avoid query route again")
+          directionsDisplay.setDirections(this.route_response);
+          document.getElementById('output').innerHTML= this.title.replace(/\n/g, "<br>")
+    }
+    else {
+
+      p_click_div= p_popup_div;
+
+      document.getElementById('output').innerHTML= ""
+      directionsService.route({
+        origin: new google.maps.LatLng(this.cust_lat, this.cust_lng),
+        destination: center_loc,
+        travelMode: TRAVEL_MODE,
+        unitSystem: google.maps.UnitSystem.METRIC,
+        transitOptions: {
+          departureTime: DEPART_TIME,
+          //modes: ['BUS'],
+          //routingPreference: 'FEWER_TRANSFERS'
+        },
+      }, function(response, status) {
+        if (status === 'OK') {
+          p_click_div[0].route_response= response
+          console.log(response['routes'][0]['legs'][0])
+          var duration_min= Math.round(response['routes'][0]['legs'][0]['duration'].value/60)
+          //var distance= response['routes'][0]['legs'][0]['distance'].text
+
+
+          //fare_str
+          var fare_str= ""
+          if( typeof(response['routes'][0].fare) != "undefined" ) {
+                fare_str= ", " + response['routes'][0].fare.currency + response['routes'][0].fare.text;
+          } 
+          directionsDisplay.setDirections(response);
+
+          //transit_str          
+          var transit_str= ""
+          var nTransit= 0;
+          var walk_sec= 0;
+          var steps= response['routes'][0]['legs'][0]['steps'];
+          for (var i=0 ; i<steps.length ; i++ ) {
+              if( steps[i].travel_mode=="TRANSIT" ) 
+                nTransit++;              
+              else if( steps[i].travel_mode=="WALKING" ) 
+                walk_sec+= steps[i].duration.value;
+          }
+          if(nTransit==0)
+            transit_str= " (走路" + Math.round(walk_sec/60) + "分)" 
+          else
+            transit_str= " (轉乘" + (nTransit-1) + "次, 走路" + Math.round(walk_sec/60) + "分)" 
+                  
+          var out_str= response['routes'][0]['legs'][0].start_address+"\n"/*+"(lat:"+p_click_div[0].cust_lat+", lng:"+p_click_div[0].cust_lng+")\n"*/+
+                                duration_min + "分" + transit_str /*+ ", " + distance */+ fare_str + "\n"
+
+
+          for (var i=0 ; i<steps.length ; i++ ) {
+              out_str+= "(" + (i+1) + ") ";
+              if( steps[i].travel_mode=="TRANSIT" ) {
+                if(steps[i].transit.line.vehicle.name=="地下鐵")
+                    out_str+= "捷運 開往" + steps[i].transit.arrival_stop.name.replace(/捷運/g, "")
+                else if(steps[i].transit.line.vehicle.type=="BUS")
+                    out_str+= "巴士[" + steps[i].transit.line.short_name + "]" + " 開往" + steps[i].transit.arrival_stop.name 
+                else /*if(steps[i].transit.line.short_name=="高鐵" || steps[i].transit.line.short_name=="火車") */  //"HEAVY_RAIL" for 火車 and 高鐵
+                    out_str+= steps[i].transit.line.short_name + " 開往" + steps[i].transit.arrival_stop.name 
+              }
+              else /*if (steps[i].travel_mode=="WALKING" ) */ {
+                out_str+= steps[i].instructions
+              }
+              out_str+= " ("/*+ steps[i].distance.text + ", "*/ + steps[i].duration.text + ")\n";
+          }
+
+          p_click_div[0].cust_duration_min= duration_min
+		  p_click_div[0].title= out_str
+          p_click_div[0].innerHTML= duration_min
+          document.getElementById('output').innerHTML+= out_str.replace(/\n/g, "<br>")
+
+          
+          css_name= get_css_name(duration_min)
+          set_div_css(p_click_div, css_name);
+          div_update_hide(p_click_div)
+
+        } else {
+          window.alert('Directions request failed due to ' + status);
+        }
+
+        p_click_div= [];
+      }) 
+    }
+
+    }
+
+    Popup = createPopupClass();
+    popup = new Popup(
+        label_location,
+        p_popup_div,
+        css_name
+    );            
+    popup.setMap(map);
+}
+
+
+
+function add_marker(marker_location, comment) {
+  var marker = new google.maps.Marker({
+    map: map,
+    position: marker_location
+  }); 
+}
+
+//test
+//css_name= "popup-bubble-level-0"
+
+
+
+
+// STEP(2) Query transport time of each locations
+var iRoute= 1
+function query_route() {
+    console.log('<<<<Query Route>>>>');
+    directionsService = new google.maps.DirectionsService;
+    var service = new google.maps.DistanceMatrixService;
+    var bounds = new google.maps.LatLngBounds;
+    var destinationIcon = 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=D|FF0000|000000';
+    var originIcon = 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=O|FFFF00|000000';
+
+
+
+
+    var total_route= iRoute + locations.length;
+    document.getElementById('result_title').innerHTML= "Results (" + Math.round(((iRoute+1)/total_route)*100) + "%)"
+
+
+
+    loc_part= locations.splice(locations.length-QUERY_LOC_LIMIT, QUERY_LOC_LIMIT); //remove elements and return sub-array
+    
+    console.log('loc_part:');
+    console.log(loc_part)
+
+    service.getDistanceMatrix({
+        origins: [POS_CENTER],
+        destinations: loc_part,
+        travelMode: TRAVEL_MODE,
+        unitSystem: google.maps.UnitSystem.METRIC,
+        transitOptions: {
+            departureTime: DEPART_TIME,
+        },
+
+        }, function(response, status) { //NOTE: one getDistanceMatrix() get one callback
+		
+		
+          if (status=="OVER_QUERY_LIMIT") {
+              console.log('Error: ' + status);
+              locations= locations.concat(loc_part)
+              setTimeout('query_route();',QUERY_LOC_DELAY_MS);
+          }
+          else if (status!=='OK') {
+              console.log('Unknow error: ' + status);
+              alert('Unknow error: ' + status);
+          }
+          else {
+                var origList = response.originAddresses;
+                var destList = response.destinationAddresses;
+                console.log('destList:');
+                console.log(destList)
+
+
+                for (var i = 0; i < origList.length; i++) {
+                    var routes = response.rows[i].elements;
+                    console.log('routes:');
+                    console.log(routes)
+
+                    for (var j = 0; j < routes.length; j++) {
+                        //console.log(routes[j])
+                        if(routes[j].status=="OK") {
+
+                            var duration_min= Math.floor(routes[j].duration.value / 60);
+                            css_name= get_css_name(duration_min)
+
+                            
+                            //test
+//                            if(locations_region==0) 
+//                                css_name= "popup-bubble-level-1"
+
+                            var fare_str= ""                                
+                            if( typeof(routes[j].fare) != "undefined" ) {
+                                fare_str= ", " + routes[j].fare.currency + routes[j].fare.text;
+                            } 
+
+                            hint= destList[j]+"\n"/*+"(lat:"+loc_part[j].lat()+", lng:"+loc_part[j].lng()+")\n"*/+
+                                duration_min + "分" /*+ ", " + routes[j].distance.text*/ + fare_str;
+                            add_label(loc_part[j], duration_min/*+"分"*/, hint, css_name, duration_min);
+
+//                            map.fitBounds(bounds.extend(loc_part[j]));
+//                            document.getElementById('output').innerHTML += duration_min + "分, " + routes[j].distance.text + ", " + fare_str + ", " + destList[j] + '<br>';
+                        }
+                    }
+                }
+
+				iRoute+= loc_part.length
+                if(locations.length>0) {
+                    setTimeout('query_route();',QUERY_LOC_DELAY_MS);
+                }
+                else {
+//                  map.setCenter(center_loc);
+                    map.setCenter(new google.maps.LatLng(MAP_CENTER_LAT, MAP_CENTER_LNG));
+                    map.setZoom(ZOOM_LEVEL);
+                    console.log("finish");
+                }
+            }
+        });
+}
+
+
+
+function is_nearby(loc1, loc2) {
+    var distance_m= google.maps.geometry.spherical.computeDistanceBetween(loc1, loc2);
+    return (distance_m < 1.0);
+}
+
+
+
+// Y:Latitude 緯度, X:Longitude 經度  => (Y,X)=(Lat, Lng)= Taiwan (25.052828, 121.607271)
+    //test
+//    iii=-1
+//    iii_target=53;
+function add_location(loc, x_lng_km, y_lat_km, iRegion) {
+
+//    iii++;
+
+
+//    if(iii==iii_target) { console.log("=====================tracking==========================") };
+//    if(iii==iii_target) { add_label(loc, "1 org", "popup-bubble-test") };
+
+//    console.log(iii + " add_location: (" + x_lng_km + "km, " + y_lat_km + "km), loc=(lat:"+loc.lat()+", lng:"+loc.lng()+")")
+    var pos= new google.maps.geometry.spherical.computeOffset(loc, y_lat_km*1000, 90); //move Lnt    
+//    if(iii==iii_target) { add_label(pos, "2 pos_move_Lnt", "popup-bubble-test") };
+
+    //console.log("  pos= (lat:"+pos.lat()+", lng:"+pos.lng()+")")
+    pos= new google.maps.geometry.spherical.computeOffset(pos, x_lng_km*1000, 0); //move Lat
+//    if(iii==iii_target) { add_label(pos, "3 pos_move_Lat", "popup-bubble-test") };
+    //console.log("  pos= (lat:"+pos.lat()+", lng:"+pos.lng()+")")
+    density_m= REGIONS[0].density_km * 1000;
+
+    //align to right-up grid (tolance 1m)
+    var posLat= new google.maps.LatLng(pos.lat(), center_loc.lng()); //with the same Longitude (x) of center
+//    if(iii==iii_target) { add_label(posLat, "4 same lat", "popup-bubble-test") };
+    //console.log("  center_loc= (lat:"+center_loc.lat()+", lng:"+center_loc.lng()+")")
+    //console.log("  posLat= (lat:"+posLat.lat()+", lng:"+posLat.lng()+")")
+    var distanceLat_m= google.maps.geometry.spherical.computeDistanceBetween(posLat, center_loc);
+    //console.log("  heading= " + google.maps.geometry.spherical.computeHeading(posLat, center_loc));
+    var diffLat_m= Math.round(distanceLat_m)%Math.round(density_m);
+    //console.log("  distanceLat_m=" + distanceLat_m + ", density_m="+density_m);
+    //console.log("  Math.round(distanceLat_m):"+ Math.round(distanceLat_m)+" %  Math.round(density_m):"+ Math.round(density_m)+"  =  "+diffLat_m)
+    if( diffLat_m!=0 ) { 
+        if(pos.lat()<center_loc.lat()) //move up
+            pos= new google.maps.geometry.spherical.computeOffset(pos, diffLat_m, 0);  
+        else
+            pos= new google.maps.geometry.spherical.computeOffset(pos, density_m-diffLat_m, 0);  
+        //console.log("  align lat: (lat:"+pos.lat()+", lng:"+pos.lng()+")")
+//        if(iii==iii_target) { add_label(pos, "5 pos align lat", "popup-bubble-test") };
+    }
+
+    var posLng= new google.maps.LatLng(center_loc.lat(), pos.lng()); //with the same Latitude (y) of center
+    //if(iii==iii_target) { add_label(posLat, "10 same lng", "popup-bubble-test") };
+    var distanceLng_m= google.maps.geometry.spherical.computeDistanceBetween(posLng, center_loc);
+    var diffLng_m= Math.round(distanceLng_m)%Math.round(density_m);
+    if( diffLng_m!=0 ) {
+        if(pos.lng()<center_loc.lng()) //move right
+            pos= new google.maps.geometry.spherical.computeOffset(pos, diffLng_m, 90);
+        else
+            pos= new google.maps.geometry.spherical.computeOffset(pos, density_m-diffLng_m, 90);
+        //console.log("  align lng: (lat:"+pos.lat()+", lng:"+pos.lng()+")")
+        //if(iii==iii_target) { add_label(pos, "11 pos align lng", "popup-bubble-test") };
+    }
+
+    //ignore center_poc
+    if( !is_nearby(pos, center_loc) ) {
+        locations.push(pos);
+    }
+//    locations_region.push(iRegion);
+//    console.log("add location: (" + x_lng_km + "km, " + y_lat_km + "km)  =>  (lat:" + pos.lat() + ", lng:" + pos.lng() + ")")
+    //add_marker(pos)
+}
+
+
+var iRegion=0;
+function search_region(){
+    if( iRegion < REGIONS.length ) {
+        console.log("Search region #" + iRegion)
+        geocoder.geocode( { 'address': REGIONS[iRegion].addr}, function(results, status) {
+            if (status == 'OK') {	
+                //add_marker(results[0].geometry.location, results[0].formatted_address)
+                console.log(results[0].formatted_address + " (lat:"+results[0].geometry.location.lat() +
+                    ", lng:"+results[0].geometry.location.lng()+")")
+                
+                //Add locations
+                for(var y=-REGIONS[iRegion].diameter_km/2 ; y<=REGIONS[iRegion].diameter_km/2 ; y+=REGIONS[iRegion].density_km) {
+                    for(var x=-REGIONS[iRegion].diameter_km/2 ; x<=REGIONS[iRegion].diameter_km/2 ; x+=REGIONS[iRegion].density_km) {
+                        if(y==0 && x==0 && iRegion==0) 
+                            continue;
+                        add_location(results[0].geometry.location, x, y, iRegion);
+                    }
+                }
+                iRegion++;
+//                if(iRegion%8==0)
+                    setTimeout('search_region();', QUERY_GEO_DELAY_MS);
+  //              else
+    //                search_region();
+           } else {
+                console.log('geocoder.geocode callback fail');
+                console.log(status);
+                alert('geocoder.geocode callback fail: ' + status)
+           }
+       });    
+
+    }
+    else {
+        console.log("Totally "+ locations.length +" locations");       
+
+
+
+        //test
+//        console.log(locations_region)  
+//        console.log(locations)   
+//        while(locations_region[0]==0) {
+//            add_label(locations[0], "分", "popup-bubble-level-1");
+//            locations.splice(0, 1);
+//            locations_region.splice(0, 1);
+//        }
+//        console.log(locations_region)  
+//        console.log(locations)    
+
+        query_route()
+    }
+}
+
+
+function keyFunction() {
+    if(window.event.keyCode==27){
+        directionsDisplay.setMap(null);
+        console.log("ESC key press")
+        document.getElementById('output').innerHTML= ""
+    }
+}
+document.onkeydown=keyFunction;
+
+
+
+function initMap() {
+//    document.title += POS_CENTER;    
+    document.getElementById('target_addr').innerHTML= "TO: " + POS_CENTER;
+
+    if(TRAVEL_MODE=='TRANSIT')
+        document.getElementById('target_addr').innerHTML+= " (大眾運輸)"
+    else if(TRAVEL_MODE=='BICYCLING')
+        document.getElementById('target_addr').innerHTML+= " (騎單車)"
+    else if(TRAVEL_MODE=='DRIVING')
+        document.getElementById('target_addr').innerHTML+= " (開車)"
+    else /*if(TRAVEL_MODE=='WALKING')*/
+        document.getElementById('target_addr').innerHTML+= " (步行)"
+
+
+    directionsDisplay = new google.maps.DirectionsRenderer;    
+    directionsService = new google.maps.DirectionsService;
+    directionsDisplay.setMap(map);
+    geocoder = new google.maps.Geocoder();
+
+    map = new google.maps.Map(document.getElementById('map'), {
+        //center: {lat: center_loc.lat(), lng: center_loc.lng()},
+        zoom: ZOOM_LEVEL,
+    });	
+
+
+    //Query center location 
+    geocoder.geocode( { 'address': POS_CENTER}, function(results, status) {
+        if (status == 'OK') {	
+            center_loc= results[0].geometry.location;
+            add_marker(center_loc);
+//            map.setCenter(center_loc);
+            map.setCenter(new google.maps.LatLng(MAP_CENTER_LAT, MAP_CENTER_LNG));
+        }
+   });    
+
+   //onclick handler
+/*   document.getElementById('map').onclick = function(){ 
+      directionsDisplay.setMap(null);
+      console.log("map onclick")
+    }
+
+   document.getElementById('map').onmousedown = function(){ 
+      console.log("map onmousedown")
+    }
+   document.getElementById('map').onmouseup = function(){ 
+      console.log("map onmouseup")
+    }
+*/
+   document.getElementById('map').ondblclick = function(){  //double click
+      directionsDisplay.setMap(null);
+      console.log("map ondblclick")      
+      document.getElementById('output').innerHTML= ""
+    }
+
+
+
+
+    //Search regions
+    search_region();
+}
+
+
+/**
+ * Returns the Popup class.
+ *
+ * Unfortunately, the Popup class can only be defined after
+ * google.maps.OverlayView is defined, when the Maps API is loaded.
+ * This function should be called by initMap.
+ */
+function createPopupClass() {
+    /**
+     * A customized popup on the map.
+     * @param {!google.maps.LatLng} position
+     * @param {!Element} content The bubble div.
+     * @constructor
+     * @extends {google.maps.OverlayView}
+     */
+    function Popup(position, p_content, css_name) {
+        this.position = position;
+
+        p_content[0].classList.add(css_name);
+        //p_content[0].classList.add('popup-bubble-level-0');
+//        console.log("add " + css_name);
+        
+
+        // This zero-height div is positioned at the bottom of the bubble.
+        var p_bubbleAnchor = [ document.createElement('div') ];
+        p_bubbleAnchor[0].classList.add('popup-bubble-anchor');
+        p_bubbleAnchor[0].appendChild(p_content[0]);
+        p_content[0].cust_p_bubbleAnchor= p_bubbleAnchor;
+        div_update_hide(p_content);
+
+        // This zero-height div is positioned at the bottom of the tip.
+        this.containerDiv = document.createElement('div');
+        this.containerDiv.classList.add('popup-container');
+        this.containerDiv.appendChild(p_bubbleAnchor[0]);
+
+        // Optionally stop clicks, etc., from bubbling up to the map.
+        google.maps.OverlayView.preventMapHitsAndGesturesFrom(this.containerDiv);
+    }
+    // ES5 magic to extend google.maps.OverlayView.
+    Popup.prototype = Object.create(google.maps.OverlayView.prototype);
+
+    /** Called when the popup is added to the map. */
+    Popup.prototype.onAdd = function() {
+        this.getPanes().floatPane.appendChild(this.containerDiv);
+    };
+
+    /** Called when the popup is removed from the map. */
+    Popup.prototype.onRemove = function() {
+        if (this.containerDiv.parentElement) {
+            this.containerDiv.parentElement.removeChild(this.containerDiv);
+        }
+    };
+
+    /** Called each frame when the popup needs to draw itself. */
+    Popup.prototype.draw = function() {
+        var divPosition = this.getProjection().fromLatLngToDivPixel(this.position);
+
+        // Hide the popup when it is far out of view.
+        var display =
+                Math.abs(divPosition.x) < 4000 && Math.abs(divPosition.y) < 4000 ?
+                'block' :
+                'none';
+
+        if (display === 'block') {
+            this.containerDiv.style.left = divPosition.x + 'px';
+            this.containerDiv.style.top = divPosition.y + 'px';
+        }
+        if (this.containerDiv.style.display !== display) {
+            this.containerDiv.style.display = display;
+        }
+    };
+
+    return Popup;
+}
+        </script>
+        <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9joRrMMte2KuD5bjP2aDQ_5lniWFhIe4&callback=initMap&libraries=geometry">
+        </script>
+
+    </body>
+</html>
