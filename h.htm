@@ -213,7 +213,7 @@
     <body>
         
         <div id="right-panel">
-                <div id="result_title"><strong>Results</strong></div>
+                <strong><div id="result_title">搜尋進度</div></strong>
                 <div id="target_addr"></div>
 
                 <div id="option">
@@ -524,15 +524,13 @@ function query_route() {
     var originIcon = 'https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=O|FFFF00|000000';
 
 
-
-
-    var total_route= iRoute + locations.length;
-    document.getElementById('result_title').innerHTML= "Results (" + Math.round(((iRoute+1)/total_route)*100) + "%)"
-
-
-
     loc_part= locations.splice(locations.length-QUERY_LOC_LIMIT, QUERY_LOC_LIMIT); //remove elements and return sub-array
     
+   
+    var total_route= iRoute + locations.length;
+    document.getElementById('result_title').innerHTML= "搜尋進度 (" + Math.round(((iRoute)/total_route)*100) + "%)"
+
+
     console.log('loc_part:');
     console.log(loc_part)
 
